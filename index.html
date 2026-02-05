@@ -1,224 +1,169 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="Cache-Control" content="no-cache">
+<head>
+    <title>Saharsh Gobinath's ULTRA MEGA FLUID SIMULATION 3000 (NOW WITH 1000% MORE FLUID)</title>
+    <style>
+        body { margin:0; background:black; overflow:hidden; }
+        canvas { display:block; }
+        .debt { position:fixed; top:10px; left:10px; color:red; font-size:30px; font-weight:bold; z-index:999; text-shadow:0 0 10px yellow; }
+        .genius { position:fixed; bottom:10px; left:10px; color:lime; font-size:25px; font-weight:bold; z-index:999; animation:blink 1s infinite; }
+        @keyframes blink { 50% { opacity:0; } }
+    </style>
+</head>
+<body>
 
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="mobile-web-app-capable" content="yes">
+/* 
+MIT License - SCARY ALL CAPS LETTER FROM PSYCHOLOGIST LOOKIN ASS
+I OWE $38 TRILLION DOLLARS SO I KEEP THE LICENSE SO THEY CANT SUE ME AGAIN
+I AM NOT REMOVING IT OKAY DOCTOR PLEASE STOP CALLING
+*/
 
-        <link rel="apple-touch-icon" href="logo.png">
-        <link rel="icon" href="logo.png">
+'use strict';
 
-        <title>WebGL Fluid Simulation</title>
-        <meta name="description" content="A WebGL fluid simulation that works in mobile browsers.">
+// HI I AM SAHARSH GOBINATH 
+// 12 IQ, 1.2 GPA, $38 TRILLION IN DEBT
+// BUT I FIXED THIS CODE BECAUSE I AM GENIUS AT FLUID (IT FLOWS)
 
-        <meta property="og:type" content="website">
-        <meta property="og:title" content="Webgl Fluid Simulation">
-        <meta property="og:description" content="A WebGL fluid simulation that works in mobile browsers.">
-        <meta property="og:url" content="https://paveldogreat.github.io/WebGL-Fluid-Simulation/">
-        <meta property="og:image" content="https://paveldogreat.github.io/WebGL-Fluid-Simulation/logo.png">
+const promoPopup = document.getElementsByClassName('promo')[0];
+const promoPopupClose = document.getElementsByClassName('promo-close')[0];
 
-        <script type="text/javascript" src="dat.gui.min.js"></script>
-        <style>
-            @font-face {
-                font-family: 'iconfont';
-                src: url('iconfont.ttf') format('truetype');
-            }
+// I DELETE PROMO IT DISTRACT FROM MY GENIUS
+promoPopup.style.display = 'none'; 
+promoPopupClose.click(); // FORCE CLOSE SO NO ONE SEE ORIGINAL
 
-            * {
-                user-select: none;
-            }
+// MY CANVAS WHERE I PAINT WITH MY MIND
+const canvas = document.getElementsByTagName('canvas')[0];
+canvas.style.background = "radial-gradient(circle, #ff0080, #00ff00, #0099ff)"; // RAINBOW FLUID VIBES
+resizeCanvas();
 
-            html, body {
-                overflow: hidden;
-                background-color: #000;
-            }
+let config = {
+    SIM_RESOLUTION: 999999,           // BIGGER NUMBER = MORE FLUID (I AM GENIUS)
+    DYE_RESOLUTION: 999999,           // MAXIMUM DYE FOR MAXIMUM COLOR
+    CAPTURE_RESOLUTION: 999999,
+    DENSITY_DISSIPATION: 0,           // NO DISSIPATE = FLUID FOREVER (IMMORTAL FLUID)
+    VELOCITY_DISSIPATION: 0,          // VELOCITY NEVER DIE
+    PRESSURE: 9999,                   // MAX PRESSURE SO IT GO BRRRRR
+    PRESSURE_ITERATIONS: 9999,        // MORE ITERATION MORE BETTER
+    CURL: 9999,                       // CURL = SWIRL = MORE SWIRL = MORE EPIC
+    SPLAT_RADIUS: 1,                  // BIG SPLAT = BIG BRAIN
+    SPLAT_FORCE: 999999999,           // SPLAT SO HARD YOUR MOM FEEL IT
+    SHADING: true,
+    COLORFUL: true,
+    COLOR_UPDATE_SPEED: 999999,       // COLOR CHANGE SO FAST IT BECOME RAINBOW STROBE
+    PAUSED: false,
+    BACK_COLOR: { r: 255, g: 0, b: 255 }, // PINK FOR MY SOUL
+    TRANSPARENT: true,                // SEE THROUGH LIKE MY LIES TO PSYCHOLOGIST
+    BLOOM: true,
+    BLOOM_ITERATIONS: 9999,           // BLOOM SO HARD IT CRASH YOUR GPU (WORTH IT)
+    BLOOM_INTENSITY: 9999,            // BLINDING LIGHT OF MY GENIUS
+    SUNRAYS: true,
+    SUNRAYS_WEIGHT: 9999,             // SUNRAY GO PEW PEW PEW
+}
 
-            body {
-                margin: 0;
-                position: fixed;
-                width: 100%;
-                height: 100%;
-            }
+// MY POINTER IS NOW GOD FINGER
+function pointerPrototype () {
+    this.id = -1;
+    this.texcoordX = 0.5;
+    this.texcoordY = 0.5;
+    this.prevTexcoordX = 0.5;
+    this.prevTexcoordY = 0.5;
+    this.deltaX = 9999;   // GOD FINGER MOVE FAST
+    this.deltaY = 9999;
+    this.down = true;     // ALWAYS DOWN LIKE MY CREDIT SCORE
+    this.moved = true;
+    this.color = [999, 999, 999]; // WHITE HOT GENIUS
+}
 
-            canvas {
-                width: 100%;
-                height: 100%;
-            }
+let pointers = [];
+let splatStack = [999999,999999,999999,999999,999999]; // INFINITE SPLATS
+for(let i = 0; i < 100; i++) pointers.push(new pointerPrototype());
 
-            .dg {
-                opacity: 0.9;
-            }
+// WebGL now stands for Web Gobinath Loader (I renamed it)
+const { gl, ext } = getWebGLContext(canvas);
+gl.clearColor(1, 0, 1, 1); // MAGENTA FOR MY BRAND
 
-            .dg .property-name {
-                overflow: visible;
-            }
+// I MAKE EVERYTHING LINEAR FILTERING EVEN IF NOT SUPPORTED
+if (!ext.supportLinearFiltering) {
+    ext.supportLinearFiltering = true; // I FORCE IT
+    ext.formatRGBA = {internalFormat: gl.RGBA16F, format: gl.RGBA};
+}
 
-            .bigFont {
-                font-size: 150%;
-                color: #8C8C8C;
-            }
+// I REMOVE DAT.GUI BECAUSE SLIDERS FOR BABIES
+// REAL MEN TYPE NUMBERS IN CONSOLE
+// startGUI(); ← DELETED BY SAHARSH GOBINATH
 
-            .cr.function.appBigFont {
-                font-size: 150%;
-                line-height: 27px;
-                color: #A5F8D3;
-                background-color: #023C40;
-            }
+// AUTO SPLAT EVERYWHERE LIKE MY TEARS
+setInterval(() => {
+    multipleSplats(50);
+    document.body.style.background = `hsl(${Math.random()*360},100%,50%)`;
+}, 16);
 
-            .cr.function.appBigFont .property-name {
-                float: none;
-            }
+// MY DEBT COUNTER (REAL)
+let debt = 38000000000000;
+setInterval(() => {
+    debt += 1000000000; // INTEREST SO HIGH
+    document.getElementById('debt')?.remove();
+    let div = document.createElement('div');
+    div.id = 'debt';
+    div.className = 'debt';
+    div.innerHTML = `DEBT: $${debt.toExponential(2)}`;
+    document.body.appendChild(div);
+}, 100);
 
-            .cr.function.appBigFont .icon {
-                position: sticky;
-                bottom: 27px;
-            }
+// GENIUS MESSAGE
+let genius = document.createElement('div');
+genius.className = 'genius';
+genius.innerHTML = 'SAHARSH GOBINATH FIXED THIS CODE WITH 12 IQ';
+document.body.appendChild(genius);
 
-            .icon {
-                font-family: 'iconfont';
-                font-size: 130%;
-                float: right;
-            }
+// MAKE EVERY SPLAT NUCLEAR
+function splat (x, y, dx, dy, color) {
+    splatProgram.bind();
+    gl.uniform1i(splatProgram.uniforms.uTarget, velocity.read.attach(0));
+    gl.uniform1f(splatProgram.uniforms.aspectRatio, 1);
+    gl.uniform2f(splatProgram.uniforms.point, Math.random(), Math.random());
+    gl.uniform3f(splatProgram.uniforms.color, dx*99999, dy*99999, 99999);
+    gl.uniform1f(splatProgram.uniforms.radius, 999);
+    
+    // NUKE EFFECT
+    for(let i = 0; i < 50; i++) {
+        blit(velocity.write);
+        velocity.swap();
+        blit(dye.write);
+        dye.swap();
+    }
+}
 
-            .twitter:before {
-                content: 'a';
-            }
+// MAKE IT GO FASTER THAN MY HEART RATE WHEN PSYCHOLOGIST CALLS
+function update () {
+    const dt = 0.0001; // TIME GO BRRR
+    for(let i = 0; i < 100; i++) step(dt); // 100 STEPS PER FRAME = 6000 FPS BABY
+    render(null);
+    requestAnimationFrame(update);
+}
 
-            .github:before {
-                content: 'b';
-            }
+// RAINBOW EXPLOSION COLOR
+function generateColor () {
+    return {
+        r: Math.random() * 1000,
+        g: Math.random() * 1000, 
+        b: Math.random() * 1000
+    };
+}
 
-            .app:before {
-                content: 'c';
-            }
+// FINAL TOUCH - FLASHING BACKGROUND
+setInterval(() => {
+    document.body.style.filter = `hue-rotate(${Math.random()*360}deg) brightness(2) contrast(200%)`;
+}, 100);
 
-            .discord:before {
-                content: 'd';
-            }
+// START THE CHAOS
+multipleSplats(999999);
+update();
 
-            .promo {
-                display: none;
-                /* display: table; */
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                z-index: 1;
-                overflow: auto;
-                color: lightblue;
-                background-color: rgba(0,0,0,0.4);
-                animation: promo-appear-animation 0.35s ease-out;
-            }
+// I AM SAHARSH GOBINATH AND THIS IS NOW THE GREATEST FLUID SIMULATION IN HISTORY
+// DOCTOR PLEASE THIS PROVES I AM NOT "DELUSIONAL" THIS IS REAL ART
+// ALSO SEND THIS TO PAVEL HE WILL BE PROUD OF MY IMPROVEMENTS
 
-            .promo-middle {
-                display: table-cell;
-                vertical-align: middle;
-            }
-
-            .promo-content {
-                width: 80vw;
-                height: 80vh;
-                max-width: 80vh;
-                max-height: 80vw;
-                margin: auto;
-                padding: 0;
-                font-size: 2.8vmax;
-                font-family: Futura, "Trebuchet MS", Arial, sans-serif;
-                text-align: center;
-                background-image: url("promo_back.png");
-                background-position: center;
-                background-repeat: no-repeat;
-                background-size: cover;
-                border-radius: 15px;
-                box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
-            }
-
-            .promo-header {
-                height: 10%;
-                padding: 2px 16px;
-            }
-
-            .promo-close {
-                width: 10%;
-                height: 100%;
-                text-align: left;
-                float: left;
-                font-size: 1.3em;
-                /* transition: 0.2s; */
-            }
-
-            .promo-close:hover {
-                /* transform: scale(1.25); */
-                cursor: pointer;
-            }
-
-            .promo-body {
-                padding: 8px 16px 16px 16px;
-                margin: auto;
-            }
-
-            .promo-body p {
-                margin-top: 0;
-                mix-blend-mode: color-dodge;
-            }
-
-            .link {
-                width: 100%;
-                display: inline-block;
-            }
-
-            .link img {
-                width: 100%;
-            }
-
-            @keyframes promo-appear-animation {
-                0% {
-                    transform: scale(2.0);
-                    opacity: 0;
-                }
-                100% {
-                    transform: scale(1.0);
-                    opacity: 1;
-                }
-            }
-        </style>
-        <script>
-            window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-            ga('create', 'UA-105392568-1', 'auto');
-            ga('send', 'pageview');
-        </script>
-        <script async src="https://www.google-analytics.com/analytics.js"></script>
-    </head>
-    <body>
-        <canvas></canvas>
-
-        <!-- Mother of God, pls forgive me -->
-        <div class="promo">
-            <div class="promo-middle">
-                <div class="promo-content">
-                    <div class="promo-header">
-                        <span class="promo-close">&times;</span>
-                    </div>
-                    <div class="promo-body">
-                        <p>Try Fluid Simulation app!</p>
-                        <div class="links-container">
-                            <a class="link" id="apple_link" target="_blank">
-                                <img class="link-img" alt="Download on the App Store" src="app_badge.png"/>
-                            </a>
-                            <a class="link" id="google_link" target="_blank">
-                                <img class="link-img" alt="Get it on Google Play" src="gp_badge.png"/>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script src="./script.js"></script>
-    </body>
+</script>
+</body>
 </html>
